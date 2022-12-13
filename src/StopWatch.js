@@ -5,9 +5,13 @@ function StopWatch() {
 
   const timeoutId = setTimeout(() => setNum(num + 1), 1000);
 
-  const pause = () => clearTimeout(timeoutId);
+  const pause = () => {
+    console.log("일시정지");
+    clearTimeout(timeoutId);
+  };
 
   const resume = () => {
+    console.log("재개");
     setTimeout(() => setNum(num + 1), 1000);
   };
 
