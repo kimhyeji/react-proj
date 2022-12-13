@@ -7,9 +7,7 @@ function StopWatch() {
 
   const pause = () => clearTimeout(timeoutId);
 
-  const resume = () => {
-    timeoutId = setTimeout(() => setNum(num + 1), 1000);
-  };
+  const resume = () => (timeoutId = setTimeout(() => setNum(num + 1), 1000));
 
   return (
     <>
