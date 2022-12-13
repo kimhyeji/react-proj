@@ -1,10 +1,11 @@
+import React, { useState } from "react";
+
 function StopWatch() {
-  return (
-    <>
-      <div>안녕</div>
-      <div>안녕</div>
-    </>
-  );
+  const [num, setNum] = useState(0);
+
+  setTimeout(() => setNum(num + 1), 1000);
+
+  return <>숫자 : {num}</>;
 }
 
 export default StopWatch;
