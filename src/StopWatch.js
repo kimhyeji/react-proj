@@ -3,16 +3,12 @@ import React, { useState } from "react";
 function StopWatch() {
   const [num, setNum] = useState(0);
 
-  const timeoutId = setTimeout(() => setNum(num + 1), 1000);
+  let timeoutId = setTimeout(() => setNum(num + 1), 1000);
 
-  const pause = () => {
-    console.log("일시정지");
-    clearTimeout(timeoutId);
-  };
+  const pause = () => clearTimeout(timeoutId);
 
   const resume = () => {
-    console.log("재개");
-    setTimeout(() => setNum(num + 1), 1000);
+    timeoutId = setTimeout(() => setNum(num + 1), 1000);
   };
 
   return (
