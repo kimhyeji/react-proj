@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
 
-function RefEx() {
+function RefModifyEx() {
   const noInputRef = useRef(null);
   const [no, setNo] = useState("");
+
   const [recordedNos, setRecordedNos] = useState([
-    5, 10, 15, 5, 20, 25, 5, 30, 35, 40, 45, 50,
+    5, 10, 15, 20, 5, 25, 5, 30, 5,
   ]);
 
   const saveNo = () => {
@@ -19,8 +20,15 @@ function RefEx() {
   };
 
   const removeNo = (index) => {
-    const newRecorededNos = recordedNos.filter((_, _index) => _index != index);
-    setRecordedNos(newRecorededNos);
+    const newRecordedNos = recordedNos.filter((_, _index) => _index != index);
+    setRecordedNos(newRecordedNos);
+  };
+
+  const modifyNo = (index, newNo) => {
+    const newRecordedNos = recordedNos.map((el, _index) =>
+      _index == index ? newNo : el
+    );
+    setRecordedNos(newRecordedNos);
   };
 
   return (
@@ -46,9 +54,12 @@ function RefEx() {
       <ul>
         {recordedNos.map((el, index) => (
           <li key={index}>
-            <sapn style={{ width: 70, display: "inline-block" }}>{el}</sapn>
-            <sapn style={{ width: 70, display: "inline-block" }}>{index}</sapn>
+            <span style={{ width: 70, display: "inline-block" }}>{el}</span>
+            <span style={{ width: 70, display: "inline-block" }}>{index}</span>
             <button onClick={() => removeNo(index)}>삭제</button>
+            <button onClick={() => modifyNo(index, el + 1)}>+1</button>
+            <button onClick={() => modifyNo(index, el - 1)}>-1</button>
+            <button onClick={() => modifyNo(index, el * 2)}>x2</button>
           </li>
         ))}
       </ul>
@@ -56,4 +67,4 @@ function RefEx() {
   );
 }
 
-export default RefEx;
+export default RefModifyEx;
