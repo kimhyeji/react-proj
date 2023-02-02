@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useInsertionEffect,
+} from "react";
 import {
   AppBar,
   Toolbar,
@@ -15,16 +21,44 @@ import {
 } from "@mui/material";
 import classNames from "classnames";
 
+import RecoilEx from "./RecoilEx";
+
 import { atom, useRecoilState } from "recoil";
+
+import { recoilPersist } from "recoil-persist";
+const { persistAtom: persistAtomTodos } = recoilPersist({
+  key: "persistAtomTodos",
+});
+const { persistAtom: persistAtomLastTodoId } = recoilPersist({
+  key: "persistAtomLastTodoId",
+});
 
 const todosAtom = atom({
   key: "app/todosAtom",
-  default: [],
+  default: [
+    {
+      id: 3,
+      regDate: "2023-02-02 12:12:12",
+      content: "공부",
+    },
+    {
+      id: 2,
+      regDate: "2023-02-02 12:12:12",
+      content: "요리",
+    },
+    {
+      id: 1,
+      regDate: "2023-02-02 12:12:12",
+      content: "운동",
+    },
+  ],
+  effects_UNSTABLE: [persistAtomTodos],
 });
 
 const lastTodoIdAtom = atom({
   key: "app/lastTodoIdAtom",
-  default: 0,
+  default: 3,
+  effects_UNSTABLE: [persistAtomLastTodoId],
 });
 
 const Alert = React.forwardRef((props, ref) => {
@@ -106,20 +140,8 @@ function useTodosStatus() {
   };
 }
 
-const muiThemePaletteKeys = [
-  "background",
-  "common",
-  "error",
-  "grey",
-  "info",
-  "primary",
-  "secondary",
-  "success",
-  "text",
-  "warning",
-];
-
-function NewTodoForm({ noticeSnackbarStatus }) {
+function NewTodoForm() {
+  const noticeSnackbarStatus = useNoticeSnackbarStatus();
   const todosStatus = useTodosStatus();
 
   const onSubmit = (e) => {
@@ -233,7 +255,8 @@ function useTodoOptionDrawerStatus() {
   };
 }
 
-function EditTodoModal({ status, todo, closeDrawer, noticeSnackbarStatus }) {
+function EditTodoModal({ status, todo, closeDrawer }) {
+  const noticeSnackbarStatus = useNoticeSnackbarStatus();
   const todosStatus = useTodosStatus();
 
   const close = () => {
@@ -306,7 +329,8 @@ function useEditTodoModalStatus() {
   };
 }
 
-function TodoOptionDrawer({ status, noticeSnackbarStatus }) {
+function TodoOptionDrawer({ status }) {
+  const noticeSnackbarStatus = useNoticeSnackbarStatus();
   const todosStatus = useTodosStatus();
 
   const editTodoModalStatus = useEditTodoModalStatus();
@@ -325,7 +349,6 @@ function TodoOptionDrawer({ status, noticeSnackbarStatus }) {
   return (
     <>
       <EditTodoModal
-        noticeSnackbarStatus={noticeSnackbarStatus}
         status={editTodoModalStatus}
         todo={todo}
         closeDrawer={status.close}
@@ -363,21 +386,17 @@ function TodoOptionDrawer({ status, noticeSnackbarStatus }) {
   );
 }
 
-function TodoList({ noticeSnackbarStatus }) {
+function TodoList() {
   const todosStatus = useTodosStatus();
   const todoOptionDrawerStatus = useTodoOptionDrawerStatus();
 
   return (
     <>
-      <TodoOptionDrawer
-        status={todoOptionDrawerStatus}
-        noticeSnackbarStatus={noticeSnackbarStatus}
-      />
+      <TodoOptionDrawer status={todoOptionDrawerStatus} />
       <div className="mt-4 px-4">
         <ul>
           {todosStatus.todos.map((todo, index) => (
             <TodoListItem
-              noticeSnackbarStatus={noticeSnackbarStatus}
               key={todo.id}
               todo={todo}
               index={index}
@@ -390,21 +409,40 @@ function TodoList({ noticeSnackbarStatus }) {
   );
 }
 
+const noticeSnackbarInfoAtom = atom({
+  key: "app/noticeSnackbarInfoAtom",
+  default: {
+    opened: false,
+    autoHideDuration: 0,
+    severity: "",
+    msg: "",
+  },
+});
+
 function useNoticeSnackbarStatus() {
-  const [opened, setOpened] = useState(false);
-  const [autoHideDuration, setAutoHideDuration] = useState(null);
-  const [severity, setSeverity] = useState(null);
-  const [msg, setMsg] = useState(null);
+  const [noticeSnackbarInfo, setNoticeSnackbarInfo] = useRecoilState(
+    noticeSnackbarInfoAtom
+  );
+
+  const opened = noticeSnackbarInfo.opened;
+  const autoHideDuration = noticeSnackbarInfo.autoHideDuration;
+  const severity = noticeSnackbarInfo.severity;
+  const msg = noticeSnackbarInfo.msg;
 
   const open = (msg, severity = "success", autoHideDuration = 6000) => {
-    setOpened(true);
-    setAutoHideDuration(autoHideDuration);
-    setSeverity(severity);
-    setMsg(msg);
+    setNoticeSnackbarInfo({
+      opened: true,
+      autoHideDuration,
+      severity,
+      msg,
+    });
   };
 
   const close = () => {
-    setOpened(false);
+    setNoticeSnackbarInfo({
+      ...noticeSnackbarInfo,
+      opened: false,
+    });
   };
 
   return {
@@ -417,7 +455,9 @@ function useNoticeSnackbarStatus() {
   };
 }
 
-function NoticeSnackbar({ status }) {
+function NoticeSnackbar() {
+  const status = useNoticeSnackbarStatus();
+
   return (
     <>
       <Snackbar
@@ -431,31 +471,7 @@ function NoticeSnackbar({ status }) {
   );
 }
 
-function App({ theme }) {
-  const todosStatus = useTodosStatus();
-  const noticeSnackbarStatus = useNoticeSnackbarStatus();
-
-  useEffect(() => {
-    todosStatus.addTodo("운동\n스트레칭\n유산소\n런지\n스쿼트");
-    todosStatus.addTodo("요리");
-    todosStatus.addTodo("공부");
-  }, []);
-
-  useEffect(() => {
-    const r = document.querySelector(":root");
-
-    muiThemePaletteKeys.forEach((paletteKey) => {
-      const themeColorObj = theme.palette[paletteKey];
-
-      for (const key in themeColorObj) {
-        if (Object.hasOwnProperty.call(themeColorObj, key)) {
-          const colorVal = themeColorObj[key];
-          r.style.setProperty(`--mui-color-${paletteKey}-${key}`, colorVal);
-        }
-      }
-    });
-  }, []);
-
+function App() {
   return (
     <>
       <AppBar position="static">
@@ -465,9 +481,10 @@ function App({ theme }) {
           <div className="flex-1"></div>
         </Toolbar>
       </AppBar>
-      <NoticeSnackbar status={noticeSnackbarStatus} />
-      <NewTodoForm noticeSnackbarStatus={noticeSnackbarStatus} />
-      <TodoList noticeSnackbarStatus={noticeSnackbarStatus} />
+      <NoticeSnackbar />
+      <NewTodoForm />
+      <TodoList />
+      {/* <RecoilEx /> */}
     </>
   );
 }
