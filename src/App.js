@@ -22,10 +22,12 @@ import {
 import classNames from "classnames";
 
 import RecoilEx from "./RecoilEx";
+import ReouterEx from "./RouterEx";
 
 import { atom, useRecoilState } from "recoil";
 
 import { recoilPersist } from "recoil-persist";
+
 const { persistAtom: persistAtomTodos } = recoilPersist({
   key: "persistAtomTodos",
 });
@@ -474,7 +476,7 @@ function NoticeSnackbar() {
 function App() {
   return (
     <>
-      <AppBar position="static">
+      {/* <AppBar position="static">
         <Toolbar className="justify-center">
           <div className="flex-1"></div>
           <span className="font-bold">HAPPY NOTE</span>
@@ -483,8 +485,9 @@ function App() {
       </AppBar>
       <NoticeSnackbar />
       <NewTodoForm />
-      <TodoList />
+      <TodoList /> */}
       {/* <RecoilEx /> */}
+      <ReouterEx />
     </>
   );
 }
